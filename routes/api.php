@@ -1,7 +1,11 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\SuperUserController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +18,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::post('auth/login', [AuthController::class, 'login']);
+
+Route::middleware(['jwt.authenticate'])->group(function () {
+
+    // USER endpoints
+    Route::prefix('user')->group(function () {
+        Route::get('/endpoint', [UserController::class, 'index']);
+    });
+
+    // ADMIN endpoints
+    Route::prefix('admin')->group(function () {
+        Route::get('/endpoint', [AdminController::class, 'index']);
+    });
+
+    // SUPER_USER endpoints
+    Route::prefix('super-user')->group(function () {
+        Route::get('/endpoint', [SuperUserController::class, 'index']);
+    });
 });

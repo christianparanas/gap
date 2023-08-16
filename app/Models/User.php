@@ -6,9 +6,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+use Tymon\JWTAuth\Contracts\JWTSubject;
+
+
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -42,4 +46,28 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    public function hasAnyRole($userId, $roleName)
+    {
+        return DB::table('user_roles')
+            ->where('user_id', $userId)
+            ->join('roles', 'user_roles.role_id', '=', 'roles.id')
+            ->where('roles.name', $roleName)
+            ->exists();
+    }
 }
